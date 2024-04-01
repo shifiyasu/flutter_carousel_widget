@@ -6,6 +6,7 @@ class CircularSlideIndicator implements SlideIndicator {
   const CircularSlideIndicator({
     this.itemSpacing = 20,
     this.indicatorRadius = 6,
+    this.currentIndicatorRadius,
     this.indicatorBorderWidth = 1,
     this.indicatorBorderColor,
     this.padding,
@@ -18,6 +19,7 @@ class CircularSlideIndicator implements SlideIndicator {
   final Color? currentIndicatorColor;
   final Color? indicatorBackgroundColor;
   final Color? indicatorBorderColor;
+  final double? currentIndicatorRadius;
   final double indicatorBorderWidth;
   final double indicatorRadius;
   final double itemSpacing;
@@ -42,16 +44,17 @@ class CircularSlideIndicator implements SlideIndicator {
         height: indicatorRadius * 2,
         child: CustomPaint(
           painter: CircularIndicatorPainter(
-            currentIndicatorColor: currentIndicatorColor ?? activeColor,
-            indicatorBackgroundColor:
-                indicatorBackgroundColor ?? backgroundColor,
-            currentPage: currentPage,
-            pageDelta: pageDelta,
-            itemCount: itemCount,
-            radius: indicatorRadius,
-            indicatorBorderColor: indicatorBorderColor,
-            borderWidth: indicatorBorderWidth,
-          ),
+              currentIndicatorColor: currentIndicatorColor ?? activeColor,
+              indicatorBackgroundColor:
+                  indicatorBackgroundColor ?? backgroundColor,
+              currentPage: currentPage,
+              pageDelta: pageDelta,
+              itemCount: itemCount,
+              radius: indicatorRadius,
+              indicatorBorderColor: indicatorBorderColor,
+              borderWidth: indicatorBorderWidth,
+              currentIndicatorRadius:
+                  currentIndicatorRadius ?? indicatorRadius),
         ),
       ),
     );
@@ -60,6 +63,7 @@ class CircularSlideIndicator implements SlideIndicator {
 
 class CircularIndicatorPainter extends CustomPainter {
   CircularIndicatorPainter({
+    required this.currentIndicatorRadius,
     required this.currentPage,
     required this.pageDelta,
     required this.itemCount,
@@ -92,6 +96,7 @@ class CircularIndicatorPainter extends CustomPainter {
   final int itemCount;
   final double pageDelta;
   final double radius;
+  final double currentIndicatorRadius;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -113,11 +118,16 @@ class CircularIndicatorPainter extends CustomPainter {
     path.addOval(Rect.fromLTRB(
         midX - radius, midY - radius, midX + radius, midY + radius));
     if (currentPage == itemCount - 1) {
-      path.addOval(Rect.fromLTRB(0, midY - radius, 2 * radius, midY + radius));
+      path.addOval(Rect.fromLTRB(0, midY - currentIndicatorRadius,
+          2 * currentIndicatorRadius, midY + currentIndicatorRadius));
       canvas.clipPath(path);
-      canvas.drawCircle(Offset(2 * radius * pageDelta - radius, midY), radius,
+      canvas.drawCircle(
+          Offset(
+              2 * currentIndicatorRadius * pageDelta - currentIndicatorRadius,
+              midY),
+          currentIndicatorRadius,
           currentIndicatorPaint);
-      midX += 2 * radius * pageDelta;
+      midX += 2 * currentIndicatorRadius * pageDelta;
     } else {
       midX += dx;
       path.addOval(Rect.fromLTRB(
@@ -126,7 +136,8 @@ class CircularIndicatorPainter extends CustomPainter {
       canvas.clipPath(path);
       midX += dx * pageDelta;
     }
-    canvas.drawCircle(Offset(midX, midY), radius, currentIndicatorPaint);
+    canvas.drawCircle(
+        Offset(midX, midY), currentIndicatorRadius, currentIndicatorPaint);
     canvas.restore();
 
     if (indicatorBorderColor != null) {
